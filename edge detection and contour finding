@@ -1,0 +1,44 @@
+import cv2
+import numpy as np
+
+# Since we have multiple images, let's define a function to process them
+def process_image_for_analysis(image_path):
+    # Read the image in grayscale
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    # Apply GaussianBlur to reduce noise and improve edge detection
+    blurred = cv2.GaussianBlur(image, (5, 5), 0)
+    
+    # Detect edges using Canny edge detection
+    edges = cv2.Canny(blurred, 50, 150)
+    
+    # Find contours which will give us an estimate of the buildings
+    contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # We will assume each contour is a building for simplicity
+    building_count = len(contours)
+    
+    # Create an image to draw the contours on
+    contour_image = np.zeros_like(image)
+    cv2.drawContours(contour_image, contours, -1, (255, 255, 255), 1)
+    
+    return building_count, contour_image
+
+# Process the first image as a sample
+building_count, contour_image = process_image_for_analysis('/mnt/data/Screenshot 2024-01-13 at 8.25.53 PM.png')
+
+# Display the original image with detected contours
+plt.figure(figsize=(14, 7))
+
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap='gray')
+plt.title('Original Image')
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.imshow(contour_image, cmap='gray')
+plt.title(f'Detected Buildings: {building_count}')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
